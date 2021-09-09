@@ -1,7 +1,7 @@
-Class SourceControlManager.Main Extends %Studio.SourceControl.Base
+Class SourceCodeManager.Main Extends %Studio.SourceControl.Base
 {
 
-Parameter SourceControlManagerProjects = "^SourceControlManagerProjects";
+Parameter SourceCodeManagerProjects = "^SourceCodeManagerProjects";
 
 XData Menu
 {
@@ -27,7 +27,7 @@ Method ExternalName(InternalName As %String) As %String
 	s type = $zcvt($li($lfs(InternalName,"."), -1), "l")
 	s fileName = $lts($li($lfs(InternalName,"."), 2, *-1),"\")_"."_type
 	
-	s rootDir = @..#SourceControlManagerProjects(rootPackageName)
+	s rootDir = @..#SourceCodeManagerProjects(rootPackageName)
 		
 	s subPath = $case(type,
 		"cls": "cls\",

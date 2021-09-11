@@ -23,31 +23,65 @@ Method UserAction(Type As %Integer, Name As %String, InternalName As %String, Se
 	ret $$$OK
 }
 
-Method ExternalName(InternalName As %String) As %String
+ClassMethod GetRootPackageName(InternalName As %String) As %String
 {
-	s rootPackageName = $lg($lfs(InternalName,"."),1,"")
-	s type = $zcvt($li($lfs(InternalName,"."), -1), "l")
-	s fileName = $lts($li($lfs(InternalName,"."), 2, *-1),"\")_"."_type
+	ret $lg($lfs(InternalName,"."),1,"")
+}
 
-	if (@..#SourceCodeManager("projects", rootPackageName) = "")
+ClassMethod GetDirProject(projectName As %String) As %String
+{
+	if (@..#SourceCodeManager("projects", projectName) = "")
 	{
-		s rootDir = @..#SourceCodeManager("projects", "*")
+		s dir = @..#SourceCodeManager("projects", "*")
 	}
 	else
 	{
-		s rootDir = @..#SourceCodeManager("projects", rootPackageName)
+		s dir = @..#SourceCodeManager("projects", projectName)
 	}
 
+	ret:(dir = "") ""
+
+	if ($lf($lb("/","\"),$e(dir,*)) = 0)
+	{
+		s dir = dir _ "\"
+	}
+
+	ret dir
+}
+
+ClassMethod ImportSourceFiles(projectName As %String, doCompilng As %Boolean = 1) As %Status
+{
+	s rootDir = ..GetDirProject(projectName)
+	
+	if (rootDir = "")
+	{
+		w "Directory for project '"_projectName_"' is undefined"
+		ret $$$OK
+	}
+
+	if doCompilng
+	{
+		s params = "c"
+	}
+
+	s sc = $system.OBJ.LoadDir(rootDir, params, .errLogs, 1)
+
+	if (errLogs '= "")
+	{
+		w "Errors: "_errLogs
+	}
+
+	ret sc
+}
+
+Method ExternalName(InternalName As %String) As %String
+{
+	s rootPackageName = ..GetRootPackageName(InternalName)
+	s rootDir = ..GetDirProject(rootPackageName)
 	ret:(rootDir = "") ""
 
-	w $$$isWINDOWS
-	
-
-	if ($lf($lb("/","\"),$e(rootDir,*)) = 0)
-	{
-		s rootDir = rootDir _ "\"
-	}
-
+	s type = $zcvt($li($lfs(InternalName,"."), -1), "l")
+	s fileName = $lts($li($lfs(InternalName,"."), 2, *-1),"\")_"."_type
 	s anyTypeSubPath =  $g(@..#SourceCodeManager("projects", rootPackageName,"*"),"\")
 	s typedSubPath = $g(@..#SourceCodeManager("projects", rootPackageName, type), anyTypeSubPath)
 

@@ -1,0 +1,16 @@
+ROUTINE SourceCodeManager.scm
+
+main
+q
+
+/// d load^SourceCodeManager.scm("<package name>")
+load(projectName) PUBLIC
+{
+    d ##class(SourceCodeManager.Main).ImportSourceFiles(projectName, 0)
+}
+
+/// d import^SourceCodeManager.scm("<package name>")
+import(projectName) PUBLIC
+{
+    d ##class(SourceCodeManager.Main).ImportSourceFiles(projectName)
+}

@@ -1,7 +1,9 @@
 Class SourceCodeManager.Main Extends %Studio.SourceControl.Base
 {
 
-Parameter SourceCodeManagerProjects = "^SourceCodeManagerProjects";
+Parameter SourceCodeManager = "^SourceCodeManager";
+
+Parameter projectsNodeName = "projects";
 
 XData Menu
 {
@@ -26,25 +28,59 @@ Method ExternalName(InternalName As %String) As %String
 	s rootPackageName = $lg($lfs(InternalName,"."),1,"")
 	s type = $zcvt($li($lfs(InternalName,"."), -1), "l")
 	s fileName = $lts($li($lfs(InternalName,"."), 2, *-1),"\")_"."_type
-	
-	s rootDir = @..#SourceCodeManagerProjects(rootPackageName)
-		
-	s subPath = $case(type,
-		"cls": "cls\",
-		"inc": "inc\",
-		:"unknowtype\")
-	
-	if ((rootDir = "") || $f(InternalName,".Generated."))
+
+	if (@..#SourceCodeManager("projects", rootPackageName) = "")
 	{
-		ret ""
+		s rootDir = @..#SourceCodeManager("projects", "*")
 	}
+	else
+	{
+		s rootDir = @..#SourceCodeManager("projects", rootPackageName)
+	}
+
+	ret:(rootDir = "") ""
+
+	w $$$isWINDOWS
 	
-	s resultPath = $tr(rootDir_subPath_fileName,"\","/")
-	ret resultPath
+
+	if ($lf($lb("/","\"),$e(rootDir,*)) = 0)
+	{
+		s rootDir = rootDir _ "\"
+	}
+
+	s anyTypeSubPath =  $g(@..#SourceCodeManager("projects", rootPackageName,"*"),"\")
+	s typedSubPath = $g(@..#SourceCodeManager("projects", rootPackageName, type), anyTypeSubPath)
+
+	if ($lf($lb("/","\"),$e(typedSubPath,*)) = 0)
+	{
+		s typedSubPath = typedSubPath _ "\"
+	}
+
+	s resultPath = rootDir_typedSubPath_fileName
+	
+	if $$$isWINDOWS
+	{
+		ret $tr(resultPath, "\","/")
+	}
+
+	ret $tr(resultPath, "/","\")
+}
+
+Method IsSkipSourceCodeManagerPackage(InternalName As %String) As %Boolean
+{
+	s isSkip =  $g(@..#SourceCodeManager("config", "skipSourceCodeManagerPackage"), 1)
+
+	ret:(isSkip = 0) 0
+	ret ($lg($lfs(InternalName,"."),1) = $lg($lfs(..%ClassName(1),"."),1,""))
 }
 
 Method ExportSourceFile(InternalName As %String) As %Status
 {
+	if (($data(@..#SourceCodeManager) = 0) || ..IsSkipSourceCodeManagerPackage(InternalName))
+	{
+		ret $$$OK
+	}
+
 	s fileName = ..ExternalName(InternalName)
 	
 	ret:(fileName = "") $$$OK

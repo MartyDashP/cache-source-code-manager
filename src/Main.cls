@@ -94,10 +94,10 @@ Method ExternalName(InternalName As %String) As %String
 	
 	if $$$isWINDOWS
 	{
-		ret $tr(resultPath, "\","/")
+		ret $replace($tr(resultPath, "\", "/"), "//", "/")
 	}
 
-	ret $tr(resultPath, "/","\")
+	ret $replace($tr(resultPath, "/", "\"), "\\", "\")
 }
 
 Method IsSkipSourceCodeManagerPackage(InternalName As %String) As %Boolean

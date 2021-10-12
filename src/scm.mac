@@ -14,3 +14,9 @@ import(projectName) PUBLIC
 {
     d ##class(SourceCodeManager.Main).ImportSourceFiles(projectName)
 }
+
+/// d update^SourceCodeManager.scm("<package name>")
+update(projectName) PUBLIC
+{
+    d ##class(SourceCodeManager.Main).UpdateSource(projectName)
+}

@@ -74,6 +74,21 @@ ClassMethod ImportSourceFiles(projectName As %String, doCompilng As %Boolean = 1
 	ret sc
 }
 
+ClassMethod UpdateSource(projectName As %String) As %Status
+{
+	s rootDir = ..GetDirProject(projectName)
+	
+	if (rootDir = "")
+	{
+		w "Project '"_projectName_"' is undefined"
+		ret $$$OK
+	}
+	
+	d $system.OBJ.DeletePackage(projectName)
+	
+	ret ..ImportSourceFiles(projectName)
+}
+
 Method ExternalName(InternalName As %String) As %String
 {
 	s rootPackageName = ..GetRootPackageName(InternalName)
